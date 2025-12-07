@@ -15,6 +15,7 @@ class Particle {
 
   update() {
     this.velocity.add(this.acceleration);
+    this.velocity.limit(6); // Limit speed to keep movement observable
     this.position.add(this.velocity);
     this.acceleration.mult(0); // Clear acceleration each frame
   }
