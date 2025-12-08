@@ -16,6 +16,13 @@ let dominanceSwitched = false; // Flag to prevent rapid switching
 let currentBlackRadius = BASE_RADIUS;
 let currentWhiteRadius = BASE_RADIUS;
 
+// Interaction variables
+let interactionCount = 0;
+let isClose = false;
+const CLOSE_DISTANCE_THRESHOLD = 150; // Distance to trigger "close" interaction
+const SHAKE_THRESHOLD = 5;
+const INTERACTION_BUFFER = 50;
+
 function setup() {
   createCanvas(800, 600);
   resetBalls();
@@ -37,6 +44,9 @@ function resetBalls() {
   currentWhiteRadius = BASE_RADIUS;
 
   console.log("Dominant Ball: " + dominantType);
+
+  interactionCount = 0;
+  isClose = false;
 }
 
 function draw() {
@@ -60,6 +70,17 @@ function draw() {
       }
     } else if (distance > switchThreshold + switchBuffer) {
       dominanceSwitched = false; // Reset flag when they move apart
+    }
+
+    // Interaction Counting Logic
+    if (distance < CLOSE_DISTANCE_THRESHOLD) {
+      if (!isClose) {
+        interactionCount++;
+        isClose = true;
+        console.log("Interaction Count: " + interactionCount);
+      }
+    } else if (distance > CLOSE_DISTANCE_THRESHOLD + INTERACTION_BUFFER) {
+      isClose = false;
     }
 
     // Map distance to a factor (0 to 1 approx)
@@ -131,8 +152,31 @@ function draw() {
     whiteBall.bounceOffWalls(0, 0, width, height, currentWhiteRadius);
 
     // Draw line connecting them
+    // Draw line connecting them
+
+    // Dynamic Stroke Weight (Thicker when close)
+    // Map distance (0 to maxDist) inversely to weight (e.g., 5 to 1)
+    let weight = map(distance, 0, width, 5, 0.1);
+    weight = constrain(weight, 0.1, 5);
+    strokeWeight(weight);
     stroke(0);
-    line(blackBall.position.x, blackBall.position.y, whiteBall.position.x, whiteBall.position.y);
+
+    let x1 = blackBall.position.x;
+    let y1 = blackBall.position.y;
+    let x2 = whiteBall.position.x;
+    let y2 = whiteBall.position.y;
+
+    // Apply Shaking Effect if interaction threshold met
+    if (interactionCount >= SHAKE_THRESHOLD) {
+      let shakeAmount = 5; // Adjust shake intensity
+      x1 += random(-shakeAmount, shakeAmount);
+      y1 += random(-shakeAmount, shakeAmount);
+      x2 += random(-shakeAmount, shakeAmount);
+      y2 += random(-shakeAmount, shakeAmount);
+    }
+
+    line(x1, y1, x2, y2);
+    strokeWeight(0.5); // Reset trigger weight for other elements
 
   } else {
     // SEPARATED STATE
