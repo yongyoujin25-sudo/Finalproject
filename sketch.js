@@ -156,8 +156,8 @@ function draw() {
 
     // Dynamic Stroke Weight (Thicker when close)
     // Map distance (0 to maxDist) inversely to weight (e.g., 5 to 1)
-    let weight = map(distance, 0, width, 5, 0.1);
-    weight = constrain(weight, 0.1, 5);
+    let weight = map(distance, 0, width, 5, 1);
+    weight = constrain(weight, 1, 5);
     strokeWeight(weight);
     stroke(0);
 
