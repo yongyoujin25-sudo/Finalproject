@@ -92,7 +92,7 @@ function draw() {
         whiteBall.applyForce(forceTowardB);
 
         // Repulsion
-        if (distance < SEPARATION_DISTANCE + (currentBlackRadius + currentWhiteRadius) / 4 && random(1) < 0.5) {
+        if (distance < SEPARATION_DISTANCE + (currentBlackRadius + currentWhiteRadius) / 4) {
             repulsionCount++;
 
             let rep = p5.Vector.sub(whiteBall.position, blackBall.position).normalize().mult(50);
@@ -180,5 +180,5 @@ function draw() {
 
 function isInsideCanvas(pos, radius) {
     return pos.x > -radius && pos.x < width + radius &&
-           pos.y > -radius && pos.y < height + radius;
+        pos.y > -radius && pos.y < height + radius;
 }
