@@ -43,4 +43,39 @@ class Particle {
       this.velocity.y *= -1;
     }
   }
+
+  updateOnRoad(roadSegments) {
+    this.velocity.add(this.acceleration);
+    this.velocity.limit(6);
+
+    // Try X movement
+    this.position.x += this.velocity.x;
+    if (!this.isOnRoad(roadSegments)) {
+      this.position.x -= this.velocity.x;
+      this.velocity.x *= -1;
+    }
+
+    // Try Y movement
+    this.position.y += this.velocity.y;
+    if (!this.isOnRoad(roadSegments)) {
+      this.position.y -= this.velocity.y;
+      this.velocity.y *= -1;
+    }
+
+    this.acceleration.mult(0);
+  }
+
+  isOnRoad(roadSegments) {
+    for (let road of roadSegments) {
+      if (
+        this.position.x >= road.x &&
+        this.position.x <= road.x + road.w &&
+        this.position.y >= road.y &&
+        this.position.y <= road.y + road.h
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

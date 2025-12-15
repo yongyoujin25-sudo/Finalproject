@@ -21,13 +21,32 @@ let shake = 0;
 const SHAKE_THRESHOLD_DISTANCE = 150;  // 멀어짐 판정 기준
 let prevDist = 0;
 
+// ★ Obstacles
+let obstacles = [];
+let statsDiv;
+
+
+
 function setup() {
     createCanvas(800, 600);
     resetBalls();
+
+    // UI setup
+    statsDiv = createDiv('');
+    statsDiv.style('color', 'white');
+    statsDiv.style('font-size', '16px');
+    statsDiv.style('margin-top', '10px');
+
+    // Initialize Obstacles
+    // 1 per side (Full Wall)
+    for (let i = 0; i < 1; i++) obstacles.push(new Obstacle('TOP', width, height));
+    for (let i = 0; i < 1; i++) obstacles.push(new Obstacle('BOTTOM', width, height));
+    for (let i = 0; i < 1; i++) obstacles.push(new Obstacle('LEFT', width, height));
+    for (let i = 0; i < 1; i++) obstacles.push(new Obstacle('RIGHT', width, height));
 }
 
 function resetBalls() {
-    blackBall = new Particle(random(width), random(height), 10, color(0));
+    blackBall = new Particle(random(width), random(height), 10, color(255));
     whiteBall = new Particle(random(width), random(height), 10, color(255));
 
     repulsionCount = 0;
@@ -42,14 +61,51 @@ function resetBalls() {
 
     prevDist = p5.Vector.dist(blackBall.position, whiteBall.position);
     shake = 0;
+
+
 }
 
 function draw() {
     background(220);
 
+
+
+
+
+
+
+    // Update and Draw Obstacles with Keyboard Control
+    for (let obs of obstacles) {
+        let isActive = false;
+
+        // Map Keys to Opposite Sides
+        if (obs.side === 'RIGHT' && keyIsDown(LEFT_ARROW)) isActive = true;
+        else if (obs.side === 'LEFT' && keyIsDown(RIGHT_ARROW)) isActive = true;
+        else if (obs.side === 'BOTTOM' && keyIsDown(UP_ARROW)) isActive = true;
+        else if (obs.side === 'TOP' && keyIsDown(DOWN_ARROW)) isActive = true;
+
+        obs.update(isActive);
+        obs.display();
+
+        if (!separated) {
+            obs.checkCollision(blackBall, currentBlackRadius);
+            obs.checkCollision(whiteBall, currentWhiteRadius);
+        }
+    }
+
     let distance = p5.Vector.dist(blackBall.position, whiteBall.position);
     let targetBlackRadius = BASE_RADIUS;
     let targetWhiteRadius = BASE_RADIUS;
+
+    if (!separated) {
+        // ... (standard logic) ...
+
+        // Stabilize balls if Space is held (reduce shake influence)
+        // We will apply this when shake is calculated later
+    }
+
+    // ... (rest of standard logic) ... (omitted for brevity, assume next chunk covers it if needed, but here we just replace up to shake logic)
+    // Wait, the ReplacementContent must match the chunk. I will provide context up to the shake logic.
 
     if (!separated) {
         // Dominance switching
@@ -85,6 +141,9 @@ function draw() {
     if (!separated) {
         // Attraction
         let magnitude = attractorForce * max((blackBall.mass / 10) * (whiteBall.mass / 10), 0.1);
+
+
+
         let forceTowardW = p5.Vector.sub(whiteBall.position, blackBall.position).normalize().mult(magnitude);
         let forceTowardB = p5.Vector.sub(blackBall.position, whiteBall.position).normalize().mult(magnitude);
 
@@ -103,6 +162,7 @@ function draw() {
                 separated = true;
             }
         }
+
 
         blackBall.update();
         whiteBall.update();
@@ -129,7 +189,7 @@ function draw() {
         // Draw line
         let weight = map(distance, 0, width, 3, 0.1);
         strokeWeight(constrain(weight, 0.1, 3));
-        stroke(0);
+        stroke(255);
         line(x1, y1, x2, y2);
 
     } else {
@@ -164,16 +224,15 @@ function draw() {
     blackBall.display(currentBlackRadius);
     whiteBall.display(currentWhiteRadius);
 
-    fill(0);
-    noStroke();
-    textSize(16);
-    text("Repulsions: " + repulsionCount + " / " + MAX_REPULSIONS, 10, 20);
-    text("Separated: " + separated, 10, 40);
+    // Update UI
+    let statusHTML = "Repulsions: " + repulsionCount + " / " + MAX_REPULSIONS + " | Separated: " + separated;
 
     if (separated && outOfBoundsStartTime > 0) {
         let timeLeft = max(0, ceil((RESET_TIME - (millis() - outOfBoundsStartTime)) / 1000));
-        text("Reset in: " + timeLeft + "s", 10, 60);
+        statusHTML += "<br>Reset in: " + timeLeft + "s";
     }
+
+    statsDiv.html(statusHTML);
 
     prevDist = distance;
 }
