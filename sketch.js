@@ -36,6 +36,7 @@ let prevDist = 0;
 // ★ Obstacles
 let obstacles = [];
 let statsDiv;
+let resetButton;
 
 
 
@@ -76,7 +77,10 @@ function resetBalls() {
     prevDist = p5.Vector.dist(blackBall.position, whiteBall.position);
     shake = 0;
 
-
+    if (resetButton) {
+        resetButton.remove();
+        resetButton = null;
+    }
 }
 
 function draw() {
@@ -86,6 +90,30 @@ function draw() {
         let t = constrain(elapsed / 2000, 0, 1);
         let bgVal = lerp(220, 0, t);
         background(bgVal);
+
+        if (elapsed > 2000) {
+            textAlign(CENTER, CENTER);
+            textSize(32);
+            fill(255);
+            noStroke();
+            text("이미 끝났다는 걸, 우린 알고 있었다.", width / 2, height / 2);
+        }
+
+        // Show Reset Button after 5 seconds (2s fade + 3s wait)
+        if (elapsed > 5000 && !resetButton) {
+            resetButton = createButton('다시하기');
+            // Use CSS for centering relative to window (since canvas is centered)
+            resetButton.style('position', 'fixed');
+            resetButton.style('left', '50%');
+            resetButton.style('top', '50%');
+            resetButton.style('margin-top', '100px'); // Offset from center
+            resetButton.style('transform', 'translate(-50%, -50%)');
+
+            resetButton.style('padding', '10px 20px');
+            resetButton.style('font-size', '16px');
+            resetButton.mousePressed(resetBalls);
+        }
+
     } else {
         background(220);
     }
@@ -235,9 +263,8 @@ function draw() {
         if (blackOut || whiteOut) {
             if (outOfBoundsStartTime === 0) {
                 outOfBoundsStartTime = millis();
-            } else if (millis() - outOfBoundsStartTime > RESET_TIME) {
-                resetBalls();
             }
+            // Auto Reset Removed
         } else {
             outOfBoundsStartTime = 0;
         }
@@ -248,11 +275,10 @@ function draw() {
     whiteBall.display(currentWhiteRadius);
 
     // Update UI
-    let statusHTML = "Repulsions: " + repulsionCount + " / " + MAX_REPULSIONS + " | Separated: " + separated;
+    let statusHTML = "충돌: " + repulsionCount + " / " + MAX_REPULSIONS + " | 이별: " + separated;
 
-    if (separated && outOfBoundsStartTime > 0) {
-        let timeLeft = max(0, ceil((RESET_TIME - (millis() - outOfBoundsStartTime)) / 1000));
-        statusHTML += "<br>Reset in: " + timeLeft + "s";
+    if (separated) {
+        statusHTML += "<br>System Halted.";
     }
 
     statsDiv.html(statusHTML);
