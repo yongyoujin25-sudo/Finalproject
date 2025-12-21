@@ -38,10 +38,28 @@ let obstacles = [];
 let statsDiv;
 let resetButton;
 
+// ★ Interactive Text
+let loveTexts = [];
+
+// ★ Sound
+let noiseGen;
 
 
 function setup() {
     createCanvas(800, 600);
+
+    // Embed YouTube Video
+    let ytDiv = createDiv('');
+    ytDiv.position(0, 0);
+    ytDiv.style('opacity', '0.01');
+    ytDiv.style('pointer-events', 'none');
+    ytDiv.html('<iframe id="ytplayer" width="300" height="200" src="https://www.youtube.com/embed/hISedC74gLw?autoplay=1&loop=1&playlist=hISedC74gLw&enablejsapi=1" allow="autoplay" allow="encrypted-media"></iframe>');
+
+    // Initialize Noise
+    noiseGen = new p5.Noise('white');
+    noiseGen.start();
+    noiseGen.amp(0);
+
     resetBalls();
 
     // UI setup
@@ -80,6 +98,15 @@ function resetBalls() {
     if (resetButton) {
         resetButton.remove();
         resetButton = null;
+    }
+
+    loveTexts = [];
+
+    // Reset YouTube Video
+    let iframe = document.getElementById('ytplayer');
+    if (iframe) {
+        iframe.contentWindow.postMessage('{"event":"command","func":"seekTo","args":[0, true]}', '*');
+        iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     }
 }
 
@@ -226,6 +253,7 @@ function draw() {
         if (distance > SHAKE_THRESHOLD_DISTANCE && prevDist <= SHAKE_THRESHOLD_DISTANCE) {
             shake = 20;    // 멀어짐 순간 큰 흔들림 발생
             showRandomText();
+            spawnLoveTexts(); // Trigger ball texts
         }
 
         // 흔들림 감쇠
@@ -284,6 +312,71 @@ function draw() {
     statsDiv.html(statusHTML);
 
     prevDist = distance;
+
+    // ★ Update Noise Level based on Obstacle Size
+    let totalObsDimension = 0;
+    // Max possible per obstacle is around 800 (width) or 600 (height).
+    // 4 obstacles. Max total approx 2800.
+    for (let obs of obstacles) {
+        if (obs.side === 'LEFT' || obs.side === 'RIGHT') {
+            totalObsDimension += obs.w;
+        } else {
+            totalObsDimension += obs.h;
+        }
+    }
+
+    // Map total size to noise volume (0.0 to 0.5)
+    // If fully retracted, 0. If fully extended, louder.
+    let targetAmp = map(totalObsDimension, 0, (width + height) * 1.5, 0, 0.5);
+    targetAmp = constrain(targetAmp, 0, 0.8);
+    noiseGen.amp(targetAmp);
+
+
+    // Draw Love Texts
+    for (let i = loveTexts.length - 1; i >= 0; i--) {
+        let t = loveTexts[i];
+        t.life -= 2; // Fade speed
+
+        if (t.life <= 0) {
+            loveTexts.splice(i, 1);
+            continue;
+        }
+
+        fill(255, t.life);
+        noStroke();
+        textSize(20);
+        textAlign(CENTER, CENTER);
+
+        let pos = t.ball.position.copy().add(t.offset);
+        text(t.content, pos.x, pos.y);
+    }
+}
+
+function spawnLoveTexts() {
+    // Add text to Black Ball
+    if (blackBall) {
+        loveTexts.push({
+            ball: blackBall,
+            life: 255,
+            content: random(['사랑해', '미안해']),
+            offset: createVector(random(-30, 30), random(-30, -60))
+        });
+    }
+
+    // Add text to White Ball
+    if (whiteBall) {
+        loveTexts.push({
+            ball: whiteBall,
+            life: 255,
+            content: random(['사랑해', '미안해']),
+            offset: createVector(random(-30, 30), random(-30, -60))
+        });
+    }
+}
+
+function mousePressed() {
+    // Keep userStartAudio for sound policy
+    userStartAudio();
 }
 
 function isInsideCanvas(pos, radius) {
