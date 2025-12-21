@@ -360,6 +360,45 @@ function draw() {
         let pos = t.ball.position.copy().add(t.offset);
         text(t.content, pos.x, pos.y);
     }
+
+    // ★ Visual Noise Overlay
+    drawVisualNoise(currentNoiseAmp);
+}
+
+function drawVisualNoise(level) {
+    if (level <= 0.01) return;
+
+    // 0. Screen Darkening (Vignette/Dimming)
+    // Darken more as level increases
+    let dimOpacity = map(level, 0, 1, 0, 150);
+    noStroke();
+    fill(0, dimOpacity);
+    rect(0, 0, width, height);
+
+    // 1. Static Grain (Random Rects)
+    let particleCount = map(level, 0, 1, 0, 1000);
+    noStroke();
+
+    for (let i = 0; i < particleCount; i++) {
+        let x = random(width);
+        let y = random(height);
+        let s = random(1, 3);
+
+        // Random grey/white with transparency based on level
+        fill(random(0, 50), random(50, 150));
+        rect(x, y, s, s);
+    }
+
+    // 2. Scanlines (Horizontal Lines)
+    let lineCount = map(level, 0, 1, 0, 10);
+    strokeWeight(1);
+
+    for (let i = 0; i < lineCount; i++) {
+        let y = random(height);
+        let opacity = map(level, 0, 1, 20, 100);
+        stroke(0, opacity);
+        line(0, y, width, y);
+    }
 }
 
 function spawnLoveTexts() {
