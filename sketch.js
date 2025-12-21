@@ -43,6 +43,7 @@ let loveTexts = [];
 
 // ★ Sound
 let noiseGen;
+let currentNoiseAmp = 0;
 
 
 function setup() {
@@ -327,9 +328,18 @@ function draw() {
 
     // Map total size to noise volume (0.0 to 0.5)
     // If fully retracted, 0. If fully extended, louder.
+    // Map total size to noise volume (0.0 to 0.5)
+    // If fully retracted, 0. If fully extended, louder.
     let targetAmp = map(totalObsDimension, 0, (width + height) * 1.5, 0, 0.5);
-    targetAmp = constrain(targetAmp, 0, 0.8);
-    noiseGen.amp(targetAmp);
+
+    let shakeAmp = map(shake, 0, 20, 0, 0.5);
+    targetAmp += shakeAmp;
+
+    targetAmp = constrain(targetAmp, 0, 1.0);
+
+    // Smooth transition (Lerp)
+    currentNoiseAmp = lerp(currentNoiseAmp, targetAmp, 0.05);
+    noiseGen.amp(currentNoiseAmp);
 
 
     // Draw Love Texts
