@@ -124,7 +124,7 @@ function draw() {
             textSize(32);
             fill(255);
             noStroke();
-            text("이미 끝났다는 걸, 우린 알고 있었다.", width / 2, height / 2);
+            text("이미 끝났다는 걸, 우린 알고 있지 않았을까.", width / 2, height / 2);
         }
 
         // Show Reset Button after 5 seconds (2s fade + 3s wait)
