@@ -13,6 +13,17 @@ const RESET_TIME = 5000;
 let dominantType = 'black';
 let dominanceSwitched = false;
 
+// ★ Text Logic
+const phrases = [
+    "이제 그만해",
+    "너는 항상 그래",
+    "나도 지쳤어",
+    "왜 나만 탓해?",
+    "버리지 마",
+    "그게 그렇게 잘못이야?",
+    "노력할게"
+];
+
 let currentBlackRadius = BASE_RADIUS;
 let currentWhiteRadius = BASE_RADIUS;
 
@@ -67,11 +78,6 @@ function resetBalls() {
 
 function draw() {
     background(220);
-
-
-
-
-
 
 
     // Update and Draw Obstacles with Keyboard Control
@@ -151,7 +157,9 @@ function draw() {
         whiteBall.applyForce(forceTowardB);
 
         // Repulsion
-        if (distance < SEPARATION_DISTANCE + (currentBlackRadius + currentWhiteRadius) / 4) {
+        let isRepelling = distance < SEPARATION_DISTANCE + (currentBlackRadius + currentWhiteRadius) / 4;
+
+        if (isRepelling) {
             repulsionCount++;
 
             let rep = p5.Vector.sub(whiteBall.position, blackBall.position).normalize().mult(50);
@@ -175,6 +183,7 @@ function draw() {
         // -----------------------------------------------------------
         if (distance > SHAKE_THRESHOLD_DISTANCE && prevDist <= SHAKE_THRESHOLD_DISTANCE) {
             shake = 20;    // 멀어짐 순간 큰 흔들림 발생
+            showRandomText();
         }
 
         // 흔들림 감쇠
@@ -240,4 +249,47 @@ function draw() {
 function isInsideCanvas(pos, radius) {
     return pos.x > -radius && pos.x < width + radius &&
         pos.y > -radius && pos.y < height + radius;
+}
+
+function showRandomText() {
+    // Pick two distinct random indices
+    let idx1 = floor(random(phrases.length));
+    let idx2 = floor(random(phrases.length));
+
+    // Ensure they are different
+    while (idx2 === idx1) {
+        idx2 = floor(random(phrases.length));
+    }
+
+    createFloatingText(phrases[idx1], 'left');
+    createFloatingText(phrases[idx2], 'right');
+}
+
+function createFloatingText(content, side) {
+    let div = createDiv(content);
+    div.style('position', 'fixed');
+    div.style('color', 'white');
+    div.style('font-size', '24px');
+    div.style('font-weight', 'bold');
+    div.style('top', '50%');
+    div.style('transform', 'translateY(-50%)');
+    div.style('opacity', '1');
+    div.style('transition', 'opacity 2s');
+    div.style('pointer-events', 'none');
+
+    if (side === 'left') {
+        div.style('left', '10%');
+    } else {
+        div.style('right', '10%');
+    }
+
+    // Trigger fade out
+    setTimeout(() => {
+        div.style('opacity', '0');
+    }, 100);
+
+    // Remove from DOM
+    setTimeout(() => {
+        div.remove();
+    }, 2100);
 }
