@@ -8,6 +8,7 @@ const SEPARATION_DISTANCE = 10;
 
 let separated = false;
 let outOfBoundsStartTime = 0;
+let separationStartTime = 0;
 const RESET_TIME = 5000;
 
 let dominantType = 'black';
@@ -61,8 +62,10 @@ function resetBalls() {
     whiteBall = new Particle(random(width), random(height), 10, color(255));
 
     repulsionCount = 0;
+    repulsionCount = 0;
     separated = false;
     outOfBoundsStartTime = 0;
+    separationStartTime = 0;
 
     dominantType = random(1) < 0.5 ? 'black' : 'white';
     dominanceSwitched = false;
@@ -77,12 +80,22 @@ function resetBalls() {
 }
 
 function draw() {
-    background(220);
+    if (separated) {
+        // Fade from 220 to 0 over 2 seconds
+        let elapsed = millis() - separationStartTime;
+        let t = constrain(elapsed / 2000, 0, 1);
+        let bgVal = lerp(220, 0, t);
+        background(bgVal);
+    } else {
+        background(220);
+    }
 
 
     // Update and Draw Obstacles with Keyboard Control
     for (let obs of obstacles) {
         let isActive = false;
+
+
 
         // Map Keys to Opposite Sides
         if (obs.side === 'RIGHT' && keyIsDown(LEFT_ARROW)) isActive = true;
@@ -168,6 +181,7 @@ function draw() {
 
             if (repulsionCount >= MAX_REPULSIONS) {
                 separated = true;
+                separationStartTime = millis();
             }
         }
 

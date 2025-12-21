@@ -4,7 +4,7 @@ class Obstacle {
         this.w = 0;
         this.h = 0;
         this.pos = createVector(0, 0);
-        this.pos = createVector(0, 0);
+
         // Max depth: Canvas Dimension - 50 (Very deep extension)
         if (side === 'TOP' || side === 'BOTTOM') {
             this.maxDepth = canvasHeight - 50;
